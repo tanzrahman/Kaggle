@@ -515,9 +515,29 @@ if __name__ == '__main__':
 
      print("test_data:\n", test_data)
 
+     # Print number of NaN or blank cell in column wise before encoding and scaling
+     X_train = pd.DataFrame(X_train)
+     X_test = pd.DataFrame(X_test)
+     print("Before encoding and scaling:")
+     print("NaN or blank cell in train data:\n", X_train.isna().sum())
+     print("NaN or blank cell in test data:\n", X_test.isna().sum())
+
+     # Filling NaN or blank cell with mean value for numerical and "Missing" word for categorical
+     X_train['Age'] = X_train['Age'].fillna(X_train['Age'].mean())
+     X_train['Cabin'] = X_train['Cabin'].fillna("Missing")
+     X_train['Embarked'] = X_train['Embarked'].fillna("Missing")
+
+     X_test['Age'] = X_test['Age'].fillna(X_test['Age'].mean())
+     X_test['Fare'] = X_test['Fare'].fillna(X_test['Fare'].mean())
+     X_test['Cabin'] = X_test['Cabin'].fillna("Missing")
+
+     print("After filling:")
+     print("NaN or blank cell in train data:\n", X_train.isna().sum())
+     print("NaN or blank cell in test data:\n", X_test.isna().sum())
+
      # Conversion categorical data to continuous data using LabelEncoder
 
-     # FOR non-numerical data
+     # For non-numerical data
      lbl_encoder = LabelEncoder()
      X_train['Name'] = lbl_encoder.fit_transform(X_train['Name'])
      X_train['Sex'] = lbl_encoder.fit_transform(X_train['Sex'])
@@ -546,16 +566,12 @@ if __name__ == '__main__':
      total_testingData = len(X_test)
      print("\nLength of testing data: ", total_testingData)
 
+     # Print number of NaN or blank cell in column wise after encoding and scaling
      X_train = pd.DataFrame(X_train)
      X_test = pd.DataFrame(X_test)
-
-     # Print number of NaN or blank cell in column wise
+     print("After encoding and scaling number:")
      print("NaN or blank cell in train data:\n", X_train.isna().sum())
      print("NaN or blank cell in test data:\n", X_test.isna().sum())
-
-     # Filling NaN or blank cell with mean value of this column
-     X_train.fillna(X_train.mean(), inplace=True)
-     X_test.fillna(X_train.mean(), inplace=True)
 
      # Model Initialization
      logistic_model = linear_model.LogisticRegression()
