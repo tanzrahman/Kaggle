@@ -55,7 +55,7 @@ def logisticRegression(logistic_model, X_train, y_train, test_data, X_test):
      # Write into csv file
      df.to_csv(r'E:\Kaggle\Titanic\result\logistic.csv', index=False)
 
-def svcClassifier(svc_rbf, svc_linear, X_train, y_train, test_data, X_test):
+def svClassifier(svc_rbf, svc_linear, X_train, y_train, test_data, X_test):
      # Support Vector Classifier
      # .............................
      # Fit the model using training dataset
@@ -457,47 +457,6 @@ def stackingClassifier(stacking_1, stacking_2, stacking_3, stacking_4, stacking_
      df.to_csv(r'E:\Kaggle\Titanic\result\stacking_6.csv', index=False)
 
 
-# def selfEnsemble(voting, stacking_1, stacking_2):
-#      # Ensemble
-#      # .............................
-#
-#      # Fit the model using training dataset
-#      voting.fit(X_train, y_train)
-#
-#      # calculating score
-#      print('Training Score = ', voting.score(X_train, y_train))
-#
-#      # calculating disease prediction
-#      defect_predict = voting.predict(X_test)
-#
-#      score = accuracy_score(y_test, defect_predict)
-#      print('Testing Score_Voting = ', score)
-#
-#      # Fit the model using training dataset
-#      stacking_1.fit(X_train, y_train)
-#
-#      # calculating score
-#      print('Training Score = ', stacking_1.score(X_train, y_train))
-#
-#      # calculating defect prediction
-#      defect_predict = stacking_1.predict(X_test)
-#
-#      score = accuracy_score(y_test, defect_predict)
-#      print('Testing Score_Stacking_1 = ', score)
-#
-#      # Fit the model using stacking classier_2
-#      stacking_2.fit(X_train, y_train)
-#
-#      # calculating score
-#      print('Training Score = ', stacking_2.score(X_train, y_train))
-#
-#      # calculating defect prediction
-#      defect_predict = stacking_2.predict(X_test)
-#
-#      score = accuracy_score(y_test, defect_predict)
-#      print('Testing Score_Stacking_2 = ', score)
-
-
 # calling main function
 if __name__ == '__main__':
      # Load training data
@@ -618,7 +577,7 @@ if __name__ == '__main__':
 
      # calling model functions
      logisticRegression(logistic_model, X_train, y_train, test_data, X_test)
-     svcClassifier(svc_rbf, svc_linear, X_train, y_train, test_data, X_test)
+     svClassifier(svc_rbf, svc_linear, X_train, y_train, test_data, X_test)
      xgbClassifier(xgb, X_train, y_train, test_data, X_test)
      cbClassifier(cb, X_train, y_train, test_data, X_test)
      lgbmClassifier(lgbm, X_train, y_train, test_data, X_test)
@@ -628,4 +587,3 @@ if __name__ == '__main__':
      gnbClassifier(gnb, X_train, y_train, test_data, X_test)
      votingClassifier(voting, X_train, y_train, test_data, X_test)
      stackingClassifier(stacking_1, stacking_2, stacking_3, stacking_4, stacking_5, stacking_6, X_train, y_train, test_data, X_test)
-     # selfEnsemble(voting, stacking_1, stacking_2)
