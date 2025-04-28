@@ -505,15 +505,43 @@ if __name__ == '__main__':
                X_test[col] = lbl_encoder.fit_transform(X_test[col])
 
 
+     # Merge X_train and y_train for finding correlation matrix
+     training_data = pd.concat([X_train, y_train], axis=1)
+     training_data.to_csv(r'E:\Kaggle\House Price\training_data.csv', index=False)
+
+     corr_matrix = pd.DataFrame(training_data.corr()) # total correlation matrix
+     corr_matrix.to_csv(r'E:\Kaggle\House Price\correlation_matrix.csv', index=False)
+     corr_matrix_target = corr_matrix['SalePrice'].drop('SalePrice') # dropped target feature from correlation matrix which is 1
+     print("Target feature corr: ", corr_matrix_target)
+
+     # Select features that have moderate or high-correlation value ( > abs(0.1) )
+     features = training_data.columns[:-1]
+     print("Features: ", features)
+     selected_features = []
+     threshold = 0.1
+     for feature, corr in zip(features, corr_matrix_target):
+          if (abs(corr) > threshold):
+               selected_features.append(feature)
+
+     print("Selected features: ", selected_features)
+
+     # New X_train with selected features that have moderate or high ( > abs(0.1)) correlation value with target value
+     X_train_selected_features = X_train[selected_features]
+     print("New X_Train: ", X_train_selected_features)
+
+     # Assign selected features to test data
+     X_test_selected_features = X_test[selected_features]
+
+
      # Normalization the dataset
      scaler = StandardScaler()
-     X_train = scaler.fit_transform(X_train)
-     X_test = scaler.fit_transform(X_test)
+     X_train_selected_features = scaler.fit_transform(X_train_selected_features)
+     X_test_selected_features = scaler.fit_transform(X_test_selected_features)
 
-     print("After scaling_X_train:\n", X_train)
-     print("After scaling_X_test:\n", X_test)
+     print("After scaling_X_train_selected_features:\n", X_train_selected_features)
+     print("After scaling_X_test:\n", X_test_selected_features)
 
-     total_testingData = len(X_test)
+     total_testingData = len(X_test_selected_features)
      print("\nLength of testing data: ", total_testingData)
 
      # Model Initialization
@@ -551,14 +579,14 @@ if __name__ == '__main__':
      print("Execution started.............\n\n")
 
      # calling model functions
-     ridgeRegression(ridge, X_train, y_train, test_data, X_test)
-     lassoRegression(lasso, X_train, y_train, test_data, X_test)
-     elasticNetRegression(elasticNet, X_train, y_train, test_data, X_test)
-     svRegression(svr_rbf, svr_linear, X_train, y_train, test_data, X_test)
-     xgbRegression(xgb, X_train, y_train, test_data, X_test)
-     cbRegression(cb, X_train, y_train, test_data, X_test)
-     lgbmRegression(lgbm, X_train, y_train, test_data, X_test)
-     rfRegression(rf, X_train, y_train, test_data, X_test)
-     mlpRegression(mlp, X_train, y_train, test_data, X_test)
-     votingRegression(voting, X_train, y_train, test_data, X_test)
-     stackingRegression(stacking_1, stacking_2, stacking_3, X_train, y_train, test_data, X_test)
+     ridgeRegression(ridge, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     lassoRegression(lasso, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     elasticNetRegression(elasticNet, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     svRegression(svr_rbf, svr_linear, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     xgbRegression(xgb, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     cbRegression(cb, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     lgbmRegression(lgbm, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     rfRegression(rf, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     mlpRegression(mlp, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     votingRegression(voting, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     stackingRegression(stacking_1, stacking_2, stacking_3, X_train_selected_features, y_train, test_data, X_test_selected_features)
