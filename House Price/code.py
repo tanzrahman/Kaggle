@@ -471,9 +471,9 @@ if __name__ == '__main__':
 
      # Fill categorical columns with ""Missing" word"
      for col in X_train.select_dtypes(include=['object']).columns:
-          X_train[col].fillna("Missing")
+          X_train[col].fillna("Missing", inplace=True)
      for col in X_test.select_dtypes(include=['object']).columns:
-          X_test[col].fillna("Missing")
+          X_test[col].fillna("Missing", inplace=True)
 
      # Filling NaN or blank cell with mean value for numerical and "Missing" word for categorical
      # X_train['Age'] = X_train['Age'].fillna(X_train['Age'].mean())
@@ -536,7 +536,7 @@ if __name__ == '__main__':
      # Normalization the dataset
      scaler = StandardScaler()
      X_train_selected_features = scaler.fit_transform(X_train_selected_features)
-     X_test_selected_features = scaler.fit_transform(X_test_selected_features)
+     X_test_selected_features = scaler.transform(X_test_selected_features)
 
      print("After scaling_X_train_selected_features:\n", X_train_selected_features)
      print("After scaling_X_test:\n", X_test_selected_features)

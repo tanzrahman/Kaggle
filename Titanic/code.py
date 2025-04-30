@@ -482,13 +482,22 @@ if __name__ == '__main__':
      print("NaN or blank cell in test data:\n", X_test.isna().sum())
 
      # Filling NaN or blank cell with mean value for numerical and "Missing" word for categorical
-     X_train['Age'] = X_train['Age'].fillna(X_train['Age'].mean())
-     X_train['Cabin'] = X_train['Cabin'].fillna("Missing")
-     X_train['Embarked'] = X_train['Embarked'].fillna("Missing")
 
-     X_test['Age'] = X_test['Age'].fillna(X_test['Age'].mean())
-     X_test['Fare'] = X_test['Fare'].fillna(X_test['Fare'].mean())
-     X_test['Cabin'] = X_test['Cabin'].fillna("Missing")
+     # Fill numerical columns with mean
+     for col in X_train.select_dtypes(include=['float64', 'int64']).columns:
+          X_train[col].fillna(X_train[col].mean(), inplace=True)
+     for col in X_test.select_dtypes(include=['float64', 'int64']).columns:
+          X_test[col].fillna(X_test[col].mean(), inplace=True)
+
+     # Fill categorical columns with ""Missing" word"
+     for col in X_train.select_dtypes(include=['object']).columns:
+          X_train[col].fillna("Missing", inplace=True)
+     for col in X_test.select_dtypes(include=['object']).columns:
+          X_test[col].fillna("Missing", inplace=True)
+
+     # Assign 1st letter of Cabin name instead of full name
+     X_train['Cabin'] = X_train['Cabin'].apply(lambda x: x[0] if x != 'Missing' else 'M')
+     X_test['Cabin'] = X_test['Cabin'].apply(lambda x: x[0] if x != 'Missing' else 'M')
 
      print("After filling:")
      print("NaN or blank cell in train data:\n", X_train.isna().sum())
@@ -496,41 +505,66 @@ if __name__ == '__main__':
 
      # Conversion categorical data to continuous data using LabelEncoder
 
+     X_train = pd.DataFrame(X_train)
+     X_test = pd.DataFrame(X_test)
+
      # For non-numerical data
      lbl_encoder = LabelEncoder()
-     X_train['Name'] = lbl_encoder.fit_transform(X_train['Name'])
-     X_train['Sex'] = lbl_encoder.fit_transform(X_train['Sex'])
-     X_train['Ticket'] = lbl_encoder.fit_transform(X_train['Ticket'])
-     X_train['Cabin'] = lbl_encoder.fit_transform(X_train['Cabin'])
-     X_train['Embarked'] = lbl_encoder.fit_transform(X_train['Embarked'])
 
-     print("After label encoding_X_train:\n", X_train)
+     for col in X_train.columns:
+          if X_train[col].dtype == 'object':
+               X_train[col] = lbl_encoder.fit_transform(X_train[col])
 
-     X_test['Name'] = lbl_encoder.fit_transform(test_data['Name'])
-     X_test['Sex'] = lbl_encoder.fit_transform(test_data['Sex'])
-     X_test['Ticket'] = lbl_encoder.fit_transform(test_data['Ticket'])
-     X_test['Cabin'] = lbl_encoder.fit_transform(test_data['Cabin'])
-     X_test['Embarked'] = lbl_encoder.fit_transform(test_data['Embarked'])
+     for col in X_test.columns:
+          if X_test[col].dtype == 'object':
+               X_test[col] = lbl_encoder.fit_transform(X_test[col])
 
-     print("After label encoding_X_test:\n", X_test)
+
+     # Merge X_train and y_train for finding correlation matrix
+     training_data = pd.concat([X_train, y_train], axis=1)
+     training_data.to_csv(r'E:\Kaggle\Titanic\training_data.csv', index=False)
+
+     corr_matrix = pd.DataFrame(training_data.corr()) # total correlation matrix
+     corr_matrix.to_csv(r'E:\Kaggle\Titanic\correlation_matrix.csv', index=False)
+     corr_matrix_target = corr_matrix['Survived'].drop('Survived') # dropped target feature from correlation matrix which is 1
+     print("Target feature corr: ", corr_matrix_target)
+
+     # Select features that have moderate or high-correlation value ( > abs(0.1) )
+     features = training_data.columns[:-1]
+     print("Features: ", features)
+     selected_features = []
+     threshold = 0.1
+     for feature, corr in zip(features, corr_matrix_target):
+          if (abs(corr) > threshold):
+               selected_features.append(feature)
+
+     print("Selected features: ", selected_features)
+
+     # New X_train with selected features that have moderate or high ( > abs(0.1)) correlation value with target value
+     X_train_selected_features = X_train[selected_features]
+     print("New X_Train: ", X_train_selected_features)
+
+     # Assign selected features to test data
+     X_test_selected_features = X_test[selected_features]
+
 
      # Normalization the dataset
      scaler = StandardScaler()
-     X_train = scaler.fit_transform(X_train)
-     X_test = scaler.fit_transform(X_test)
+     X_train_selected_features = scaler.fit_transform(X_train_selected_features)
+     X_test_selected_features = scaler.transform(X_test_selected_features)
 
-     print("After scaling_X_train:\n", X_train)
-     print("After scaling_X_test:\n", X_test)
+     print("After scaling_X_train:\n", X_train_selected_features)
+     print("After scaling_X_test:\n", X_test_selected_features)
 
-     total_testingData = len(X_test)
+     total_testingData = len(X_test_selected_features)
      print("\nLength of testing data: ", total_testingData)
 
      # Print number of NaN or blank cell in column wise after encoding and scaling
-     X_train = pd.DataFrame(X_train)
-     X_test = pd.DataFrame(X_test)
+     X_train_selected_features = pd.DataFrame(X_train_selected_features)
+     X_test_selected_features = pd.DataFrame(X_test_selected_features)
      print("After encoding and scaling number:")
-     print("NaN or blank cell in train data:\n", X_train.isna().sum())
-     print("NaN or blank cell in test data:\n", X_test.isna().sum())
+     print("NaN or blank cell in train data:\n", X_train_selected_features.isna().sum())
+     print("NaN or blank cell in test data:\n", X_test_selected_features.isna().sum())
 
      # Model Initialization
      logistic_model = linear_model.LogisticRegression()
@@ -576,14 +610,13 @@ if __name__ == '__main__':
      print("Execution started.............\n\n")
 
      # calling model functions
-     logisticRegression(logistic_model, X_train, y_train, test_data, X_test)
-     svClassifier(svc_rbf, svc_linear, X_train, y_train, test_data, X_test)
-     xgbClassifier(xgb, X_train, y_train, test_data, X_test)
-     cbClassifier(cb, X_train, y_train, test_data, X_test)
-     lgbmClassifier(lgbm, X_train, y_train, test_data, X_test)
-     rfClassifier(rf, X_train, y_train, test_data, X_test)
-     mlpClassifier(mlp, X_train, y_train, test_data, X_test)
-
-     gnbClassifier(gnb, X_train, y_train, test_data, X_test)
-     votingClassifier(voting, X_train, y_train, test_data, X_test)
-     stackingClassifier(stacking_1, stacking_2, stacking_3, stacking_4, stacking_5, stacking_6, X_train, y_train, test_data, X_test)
+     logisticRegression(logistic_model, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     svClassifier(svc_rbf, svc_linear, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     xgbClassifier(xgb, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     cbClassifier(cb, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     lgbmClassifier(lgbm, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     rfClassifier(rf, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     mlpClassifier(mlp, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     gnbClassifier(gnb, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     votingClassifier(voting, X_train_selected_features, y_train, test_data, X_test_selected_features)
+     stackingClassifier(stacking_1, stacking_2, stacking_3, stacking_4, stacking_5, stacking_6, X_train_selected_features, y_train, test_data, X_test_selected_features)
